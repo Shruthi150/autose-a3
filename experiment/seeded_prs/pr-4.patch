@@ -1,0 +1,33 @@
+diff --git a/tinydb/queries.py b/tinydb/queries.py
+index e106c5d..29c43d6 100644
+--- a/tinydb/queries.py
++++ b/tinydb/queries.py
+@@ -486,6 +486,28 @@ class Query(QueryInstance):
+             ('one_of', self._path, freeze(items))
+         )
+ 
++    def startswith(self, prefix: str) -> QueryInstance:
++        """
++        Check if the value starts with ``prefix``.
++
++        >>> Query().f1.startswith('foo')
++        """
++        return self._generate_test(
++            lambda value: value.startswith(prefix),
++            ('startswith', self._path, prefix)
++        )
++
++    def endswith(self, suffix: str) -> QueryInstance:
++        """
++        Check if the value ends with ``suffix``.
++
++        >>> Query().f1.endswith('bar')
++        """
++        return self._generate_test(
++            lambda value: value.endswith(suffix),
++            ('endswith', self._path, suffix)
++        )
++
+     def fragment(self, document: Mapping) -> QueryInstance:
+         def test(value):
+             for key in document:

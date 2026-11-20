@@ -1,0 +1,50 @@
+diff --git a/tests/test_queries.py b/tests/test_queries.py
+index e939eb4..b3cf9c2 100644
+--- a/tests/test_queries.py
++++ b/tests/test_queries.py
+@@ -527,3 +527,19 @@ def test_get_item():
+ 
+     assert query({'test': 1})
+     assert not query({'test': 0})
++
++
++@pytest.mark.parametrize('make_items', [
++    lambda: (v for v in ['a', 'b']),
++    lambda: iter(['a', 'b']),
++    lambda: map(str, ['a', 'b']),
++])
++def test_one_of_with_one_shot_iterables(make_items):
++    query = Query().key.one_of(make_items())
++
++    # The query must give the same answer for every document and on every
++    # evaluation, not just for the first one it sees.
++    assert query({'key': 'a'})
++    assert query({'key': 'b'})
++    assert query({'key': 'a'})
++    assert not query({'key': 'c'})
+diff --git a/tinydb/queries.py b/tinydb/queries.py
+index e106c5d..4681081 100644
+--- a/tinydb/queries.py
++++ b/tinydb/queries.py
+@@ -17,7 +17,7 @@ False
+ """
+ 
+ import re
+-from collections.abc import Mapping, Callable, Sequence
++from collections.abc import Callable, Iterator, Mapping, Sequence
+ from typing import Any, Union, Optional, Protocol
+ 
+ from .utils import freeze
+@@ -481,6 +481,12 @@ class Query(QueryInstance):
+ 
+         :param items: The list of items to check with
+         """
++        # One-shot iterables (generators, ``map`` objects, ...) would be used
++        # up by the first document they are tested against, so we materialise
++        # them once here.
++        if isinstance(items, Iterator):
++            items = list(items)
++
+         return self._generate_test(
+             lambda value: value in items,
+             ('one_of', self._path, freeze(items))
