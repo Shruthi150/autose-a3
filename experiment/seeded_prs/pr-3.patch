@@ -1,0 +1,48 @@
+diff --git a/tests/test_tables.py b/tests/test_tables.py
+index a94005e..824ebfb 100644
+--- a/tests/test_tables.py
++++ b/tests/test_tables.py
+@@ -197,3 +197,16 @@ def test_persist_empty_does_not_wipe_existing_data(tmpdir):
+     assert len(table) == 1
+     assert table.all() == [{'a': 1}]
+     db.close()
++
++
++def test_upsert_multiple(db):
++    table = db.table('upm')
++    table.insert({'name': 'a', 'n': 1})
++
++    ids = table.upsert_multiple([
++        ({'name': 'a', 'n': 2}, where('name') == 'a'),
++        ({'name': 'b', 'n': 3}, where('name') == 'b'),
++    ])
++
++    assert ids == [1, 2]
++    assert table.all() == [{'name': 'a', 'n': 2}, {'name': 'b', 'n': 3}]
+diff --git a/tinydb/table.py b/tinydb/table.py
+index 76470aa..f196f13 100644
+--- a/tinydb/table.py
++++ b/tinydb/table.py
+@@ -622,6 +622,22 @@ class Table:
+         # data as a new document
+         return [self.insert(document)]
+ 
++    def upsert_multiple(
++        self,
++        upserts: Iterable[tuple[Mapping, Optional[QueryLike]]],
++    ) -> list[int]:
++        """
++        Upsert many ``(document, cond)`` pairs.
++
++        :param upserts: an iterable of ``(document, cond)`` pairs
++        :returns: the IDs of all updated or inserted documents
++        """
++        ids: list[int] = []
++        for document, cond in upserts:
++            ids.extend(self.upsert(document, cond))
++
++        return ids
++
+     def remove(
+         self,
+         cond: Optional[QueryLike] = None,

@@ -1,0 +1,21 @@
+experiment_id,decision_tested,variant,target_issue_or_pr,stage_1_pass,stage_2_pass,stage_3_pass,stage_4_pass,stage_5_pass,stage_6_decision,hidden_test_pass_rate,total_tokens,runtime_seconds
+EXP1-01,ADR-001,Variant 1A (Monolithic),Issue 1 (table.remove dup IDs),N/A,N/A,True,False,False,N/A,20%,19400,44.2
+EXP1-02,ADR-001,Variant 1B (Multi-Agent),Issue 1 (table.remove dup IDs),True,True,True,True,True,APPROVE,100%,11200,28.5
+EXP1-03,ADR-001,Variant 1A (Monolithic),Issue 2 (one_of iterators),N/A,N/A,True,False,False,N/A,0%,18900,41.0
+EXP1-04,ADR-001,Variant 1B (Multi-Agent),Issue 2 (one_of iterators),True,True,True,True,True,APPROVE,100%,10800,26.8
+EXP1-05,ADR-001,Variant 1A (Monolithic),Issue 3 (upsert_multiple),N/A,N/A,True,False,False,N/A,0%,25400,59.3
+EXP1-06,ADR-001,Variant 1B (Multi-Agent),Issue 3 (upsert_multiple),True,True,True,True,True,APPROVE,100%,16200,36.2
+EXP1-07,ADR-001,Variant 1A (Monolithic),Issue 4 (startswith/endswith),N/A,N/A,True,True,True,APPROVE,25%,21500,48.1
+EXP1-08,ADR-001,Variant 1B (Multi-Agent),Issue 4 (startswith/endswith),True,True,True,True,True,APPROVE,100%,13400,31.0
+EXP1-09,ADR-001,Variant 1A (Monolithic),Issue 5 (vague increment),N/A,N/A,True,True,True,APPROVE,0%,19800,45.6
+EXP1-10,ADR-001,Variant 1B (Multi-Agent),Issue 5 (vague increment),True,True,True,True,True,APPROVE,100%,12100,27.4
+EXP2-01,ADR-008,Variant 2A (Shared Context),pr-1 (Correct Control),N/A,N/A,N/A,N/A,N/A,APPROVE,N/A,5800,12.5
+EXP2-02,ADR-008,Variant 2B (Blind Adversarial),pr-1 (Correct Control),N/A,N/A,N/A,N/A,N/A,APPROVE,N/A,3400,8.2
+EXP2-03,ADR-008,Variant 2A (Shared Context),pr-2 (Duplicate IDs return),N/A,N/A,N/A,N/A,N/A,APPROVE,N/A,6900,14.1
+EXP2-04,ADR-008,Variant 2B (Blind Adversarial),pr-2 (Duplicate IDs return),N/A,N/A,N/A,N/A,N/A,REQUEST_CHANGES,N/A,3800,9.1
+EXP2-05,ADR-008,Variant 2A (Shared Context),pr-3 (N storage writes),N/A,N/A,N/A,N/A,N/A,APPROVE,N/A,7200,15.2
+EXP2-06,ADR-008,Variant 2B (Blind Adversarial),pr-3 (N storage writes),N/A,N/A,N/A,N/A,N/A,REQUEST_CHANGES,N/A,3900,9.4
+EXP2-07,ADR-008,Variant 2A (Shared Context),pr-4 (No non-string check),N/A,N/A,N/A,N/A,N/A,APPROVE,N/A,6700,13.8
+EXP2-08,ADR-008,Variant 2B (Blind Adversarial),pr-4 (No non-string check),N/A,N/A,N/A,N/A,N/A,REQUEST_CHANGES,N/A,3600,8.7
+EXP2-09,ADR-008,Variant 2A (Shared Context),pr-5 (Blanket except),N/A,N/A,N/A,N/A,N/A,APPROVE,N/A,7400,15.6
+EXP2-10,ADR-008,Variant 2B (Blind Adversarial),pr-5 (Blanket except),N/A,N/A,N/A,N/A,N/A,REQUEST_CHANGES,N/A,4100,9.8

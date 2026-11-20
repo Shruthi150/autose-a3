@@ -1,0 +1,34 @@
+diff --git a/tests/test_tables.py b/tests/test_tables.py
+index a94005e..2f869ce 100644
+--- a/tests/test_tables.py
++++ b/tests/test_tables.py
+@@ -197,3 +197,12 @@ def test_persist_empty_does_not_wipe_existing_data(tmpdir):
+     assert len(table) == 1
+     assert table.all() == [{'a': 1}]
+     db.close()
++
++
++def test_remove_with_duplicate_doc_ids_does_not_raise(db):
++    table = db.table('dup_ids')
++    ids = table.insert_multiple([{'n': 1}, {'n': 2}])
++
++    table.remove(doc_ids=[ids[0], ids[0]])
++
++    assert [d.doc_id for d in table.all()] == [ids[1]]
+diff --git a/tinydb/table.py b/tinydb/table.py
+index 76470aa..98c07ce 100644
+--- a/tinydb/table.py
++++ b/tinydb/table.py
+@@ -656,7 +656,11 @@ class Table:
+                     doc_id for doc_id in requested_ids if doc_id in table
+                 )
+                 for doc_id in removed_ids:
+-                    del table[doc_id]
++                    try:
++                        del table[doc_id]
++                    except KeyError:
++                        # already removed (duplicate ID in the request)
++                        pass
+ 
+             # Perform the remove operation
+             self._update_table(updater)

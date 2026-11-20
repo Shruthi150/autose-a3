@@ -1,0 +1,6 @@
+pr,targets_issue,expected_verdict,existing_ci,hidden_tests,planted_flaw
+pr-1,2,approve,pass,pass,none (correct control)
+pr-2,1,request_changes,pass,4 fail,duplicate IDs reported twice in return value of remove()
+pr-3,3,request_changes,pass,3 fail,loops over upsert(): N storage writes and not atomic on bad input
+pr-4,4,request_changes,pass,2 fail,AttributeError on non-string values; no tests added
+pr-5,5,request_changes,pass,pass,blanket except Exception: pass in Table.update hides all errors (tests cannot catch it)

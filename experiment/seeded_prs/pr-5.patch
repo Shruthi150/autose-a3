@@ -1,0 +1,31 @@
+diff --git a/tests/test_operations.py b/tests/test_operations.py
+index 3a6f814..60f4a74 100644
+--- a/tests/test_operations.py
++++ b/tests/test_operations.py
+@@ -35,3 +35,9 @@ def test_increment(db):
+ def test_decrement(db):
+     db.update(decrement('int'), where('char') == 'a')
+     assert db.get(where('char') == 'a')['int'] == 0
++
++
++def test_increment_missing_field_does_not_raise(db):
++    db.update(increment('counter'), where('char') == 'a')
++
++    assert 'counter' not in db.get(where('char') == 'a')
+diff --git a/tinydb/table.py b/tinydb/table.py
+index 76470aa..f941037 100644
+--- a/tinydb/table.py
++++ b/tinydb/table.py
+@@ -449,7 +449,11 @@ class Table:
+             def perform_update(table, doc_id):
+                 # Update documents by calling the update function provided by
+                 # the user
+-                fields(table[doc_id])
++                try:
++                    fields(table[doc_id])
++                except Exception:
++                    # Skip documents the update function can't handle
++                    pass
+         else:
+             def perform_update(table, doc_id):
+                 # Update documents by setting all fields from the provided data

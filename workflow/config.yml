@@ -1,0 +1,64 @@
+# AutoSE configuration tuned for Google Gemini API
+trigger_label: autose
+allowed_permissions: [admin, maintain, write]
+
+models:
+  requirements: gemini-3.5-flash
+  design: gemini-3.5-flash
+  implementer: gemini-3.5-flash
+  tester: gemini-3.5-flash
+  judge: gemini-3.5-flash
+  pr_writer: gemini-3.5-flash
+  reviewer: gemini-3.5-flash-lite       # Distinct model / profile for independent review
+
+budgets:
+  max_turns:
+    requirements: 12
+    design: 20
+    implementer: 40
+    tester: 30
+    judge: 3
+    pr_writer: 3
+    reviewer: 40
+  max_tokens_per_call: 8000
+  max_total_tokens: 3000000
+  stage_retries:
+    requirements: 2
+    design: 2
+  implement_attempts: 3
+  redesign_after_failures: 2
+  ci_retries: 1
+  max_review_rounds: 2
+
+timeouts:
+  agent_wall_seconds: 1500
+  run_tool_seconds: 300
+  ci_wait_seconds: 900
+
+limits:
+  tool_output_chars: 12000
+  issue_chars: 8000
+  architecture_doc_chars: 24000
+
+repo:
+  base_branch: master
+  architecture_doc: ARCHITECTURE.md
+  install_commands:
+    - python -m pip install -q -e .
+    - python -m pip install -q pytest pytest-cov pyyaml google-genai
+  build_commands:
+    - python -m compileall -q tinydb
+    - python -c "import tinydb"
+  test_command: python -m pytest -q -p no:cacheprovider
+  ci_workflow: autose-ci.yml
+  protected_paths:
+    - .github/
+    - workflow/
+    - architecture/
+    - experiment/
+    - results/
+    - scripts/
+    - README.md
+    - report.pdf
+    - demo.mp4
+  test_dirs: [tests/]
