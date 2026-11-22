@@ -6,26 +6,30 @@ on:
   issue_comment:
     types: [created]
 
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-  actions: write
-
 concurrency:
   group: autose-issue-${{ github.event.issue.number }}
   cancel-in-progress: true
 
 jobs:
-  autose_pipeline:
+  implement_and_release:
     if: >
       (github.event_name == 'issues' && github.event.label.name == 'autose') ||
       (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/autose'))
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+    outputs:
+      pr_number: ${{ steps.run_build.outputs.pr_number }}
+      pr_url: ${{ steps.run_build.outputs.pr_url }}
+      branch: ${{ steps.run_build.outputs.branch }}
+      base_branch: ${{ steps.run_build.outputs.base_branch }}
 
     steps:
-      - name: Checkout Pinned TinyDB Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -34,44 +38,204 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-          cache: "pip"
 
       - name: Install Dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest pyyaml google-genai
-          pip install -e .
+          python -m pip install -q --upgrade pip
+          pip install -q -r workflow/requirements.txt
+          pip install -q pytest -e .
 
-      - name: Verify Collaborator Authorization Gate
+      - name: Verify Collaborator Authorization Gate (D10)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTOR: ${{ github.actor }}
           REPO: ${{ github.repository }}
         run: |
-          PERMISSION=$(gh api repos/$REPO/collaborators/$ACTOR/permission --jq .permission || echo "none")
+          PERMISSION=$(gh api "repos/$REPO/collaborators/$ACTOR/permission" --jq .permission || echo "none")
           if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
-            echo "Security Alert: Actor $ACTOR lacks write permissions. Aborting run."
+            echo "Security Alert: Actor $ACTOR lacks write permissions ($PERMISSION). Aborting."
             exit 1
           fi
 
-      - name: Execute AutoSE Autonomous SDLC Pipeline
+      - name: Run Stages 1-5 (Requirements, Design, Implement, Test, Release + CI)
+        id: run_build
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          python -m workflow.autose.cli \
-            --issue-number "$ISSUE_NUMBER" \
-            --issue-title "$ISSUE_TITLE" \
-            --issue-body "$ISSUE_BODY" \
-            --repo-root .
+          python -m workflow.autose.cli build --issue-number "$ISSUE_NUMBER" --repo-root .
 
-      - name: Upload SDLC Stage Artifacts
+      - name: Upload Stage 1-5 Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: autose-artifacts-issue-${{ github.event.issue.number }}
+          name: autose-build-issue-${{ github.event.issue.number }}
+          path: .autose/artifacts/
+          retention-days: 30
+
+  review_round_1:
+    needs: implement_and_release
+    if: success() && needs.implement_and_release.outputs.pr_number != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Reviewer independence (D5, D8): read-only code permissions; CANNOT push commits
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      verdict: ${{ steps.run_rev1.outputs.verdict }}
+      category: ${{ steps.run_rev1.outputs.category }}
+
+    steps:
+      - name: Checkout PR Branch (Fresh Isolated Workspace)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.implement_and_release.outputs.branch }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: |
+          pip install -q -r workflow/requirements.txt
+          pip install -q pytest -e .
+
+      - name: Run Stage 6 Independent Review (Round 1/2)
+        id: run_rev1
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          BASE_BRANCH: ${{ needs.implement_and_release.outputs.base_branch }}
+        run: |
+          python -m workflow.autose.cli review \
+            --issue-number "${{ github.event.issue.number }}" \
+            --pr-number "${{ needs.implement_and_release.outputs.pr_number }}" \
+            --base-branch "${{ needs.implement_and_release.outputs.base_branch }}" \
+            --round 1 \
+            --repo-root .
+
+      - name: Upload Review Round 1 Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autose-review1-issue-${{ github.event.issue.number }}
+          path: .autose/artifacts/
+          retention-days: 30
+
+  rework_round_1:
+    needs: [implement_and_release, review_round_1]
+    if: needs.review_round_1.outputs.verdict == 'REQUEST_CHANGES'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+
+    steps:
+      - name: Checkout PR Branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.implement_and_release.outputs.branch }}
+          fetch-depth: 0
+
+      - name: Download Build & Review Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: autose-build-issue-${{ github.event.issue.number }}
+          path: .autose/artifacts/
+
+      - name: Download Review 1 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: autose-review1-issue-${{ github.event.issue.number }}
+          path: .autose/artifacts/
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: |
+          pip install -q -r workflow/requirements.txt
+          pip install -q pytest -e .
+
+      - name: Rework Code/Design Based on Review 1
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_BRANCH: ${{ needs.implement_and_release.outputs.base_branch }}
+        run: |
+          python -m workflow.autose.cli rework \
+            --issue-number "${{ github.event.issue.number }}" \
+            --branch "${{ needs.implement_and_release.outputs.branch }}" \
+            --base-branch "${{ needs.implement_and_release.outputs.base_branch }}" \
+            --category "${{ needs.review_round_1.outputs.category }}" \
+            --repo-root .
+
+      - name: Upload Rework Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autose-rework1-issue-${{ github.event.issue.number }}
+          path: .autose/artifacts/
+          retention-days: 30
+
+  review_round_2:
+    needs: [implement_and_release, rework_round_1]
+    if: success()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout Updated PR Branch (Fresh Isolated Workspace)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.implement_and_release.outputs.branch }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: |
+          pip install -q -r workflow/requirements.txt
+          pip install -q pytest -e .
+
+      - name: Run Stage 6 Independent Review (Round 2/2)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          BASE_BRANCH: ${{ needs.implement_and_release.outputs.base_branch }}
+        run: |
+          python -m workflow.autose.cli review \
+            --issue-number "${{ github.event.issue.number }}" \
+            --pr-number "${{ needs.implement_and_release.outputs.pr_number }}" \
+            --base-branch "${{ needs.implement_and_release.outputs.base_branch }}" \
+            --round 2 \
+            --repo-root .
+
+      - name: Upload Review Round 2 Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autose-review2-issue-${{ github.event.issue.number }}
           path: .autose/artifacts/
           retention-days: 30
