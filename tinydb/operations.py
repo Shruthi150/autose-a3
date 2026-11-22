@@ -55,21 +55,21 @@ def set(field: str, val: Any) -> Callable[[MutableMapping], None]:
     return transform
 
 
-def increment(field: str) -> Callable[[MutableMapping], None]:
+def increment(field: str, step: int = 1) -> Callable[[MutableMapping], None]:
     """
-    Increment a given field in the document by 1.
+    Increment a given field in the document by ``step``.
     """
     def transform(doc: MutableMapping):
-        doc[field] += 1
+        doc[field] = doc.get(field, 0) + step
 
     return transform
 
 
-def decrement(field: str) -> Callable[[MutableMapping], None]:
+def decrement(field: str, step: int = 1) -> Callable[[MutableMapping], None]:
     """
-    Decrement a given field in the document by 1.
+    Decrement a given field in the document by ``step``.
     """
     def transform(doc: MutableMapping):
-        doc[field] -= 1
+        doc[field] = doc.get(field, 0) - step
 
     return transform
