@@ -115,6 +115,8 @@ def cmd_build(args: argparse.Namespace) -> None:
             state.mark("implementation", "passed", attempts=n)
             state.mark("testing", "passed", attempts=n)
             break
+        tail = "\n".join(out.splitlines()[-12:])
+        print(f"[stage4 attempt {n} tail]\n{tail}", flush=True)
         feedback = out
     else:
         _fail(state, art, "testing", f"No passing implementation after {attempts} attempts.\n\n{feedback[-3000:]}")

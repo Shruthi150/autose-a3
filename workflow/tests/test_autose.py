@@ -5,7 +5,7 @@ from pathlib import Path
 import yaml
 
 from workflow.autose.security import redact, sanitize_untrusted, scrubbed_env, wrap_untrusted
-from workflow.autose.stages import EDIT_RE, design_files
+from workflow.autose.stages import EDIT_RE, _apply_search_replace, design_files
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -43,6 +43,25 @@ new_line = 2
     assert edits[0][0] == "tinydb/table.py"
     assert edits[0][1] == "old_line = 1"
     assert edits[0][2] == "new_line = 2"
+
+
+def test_fuzzy_search_replace_handles_comment_rewrap():
+    table_src = (REPO_ROOT / "tinydb" / "table.py").read_text(encoding="utf-8")
+    rewrapped_search = """            # (see issue #591). The list of *actually* removed IDs is
+            # determined inside the updater so it reflects the
+            # table state at write time.
+            requested_ids = list(doc_ids)
+            removed_ids: list[int] = []
+
+            def updater(table: dict):"""
+    replacement = """            requested_ids = list(dict.fromkeys(doc_ids))
+            removed_ids: list[int] = []
+
+            def updater(table: dict):"""
+    updated, how = _apply_search_replace(table_src, rewrapped_search, replacement)
+    assert updated is not None
+    assert how.startswith("fuzzy")
+    assert "list(dict.fromkeys(doc_ids))" in updated
 
 
 def test_design_files_filters_only_existing_tinydb_sources():
