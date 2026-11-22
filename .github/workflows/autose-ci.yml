@@ -16,5 +16,5 @@ jobs:
       - name: Install and Test
         run: |
           pip install -q -e .
-          pip install -q pytest
-          pytest -v -o addopts=
+          pip install -q pytest pyyaml
+          pytest -v -o addopts= tests/
