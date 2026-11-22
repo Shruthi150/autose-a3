@@ -2,7 +2,7 @@ experiment,decision,variant,target,stage_reached,builds,existing_tests_pass,hidd
 MAIN-1,Baseline,multi_agent,issue-1,stage6_complete,True,True,8,8,APPROVE,APPROVE,12627,https://github.com/Shruthi150/autose-a3/actions/runs/45017452563,https://github.com/Shruthi150/autose-a3/pull/6
 MAIN-2,Baseline,multi_agent,issue-2,stage6_complete,True,True,14,14,APPROVE,APPROVE,9493,https://github.com/Shruthi150/autose-a3/actions/runs/45017663476,https://github.com/Shruthi150/autose-a3/pull/7
 MAIN-3,Baseline,multi_agent,issue-3,rework_round_1_halted,True,True,5,9,REQUEST_CHANGES,REQUEST_CHANGES,25972,https://github.com/Shruthi150/autose-a3/actions/runs/45017875028,https://github.com/Shruthi150/autose-a3/pull/8
-MAIN-4,Baseline,multi_agent,issue-4,stage4_halted_1_new_test_failed,True,True,0,8,NO_PR,APPROVE,in_state_json_artifact,https://github.com/Shruthi150/autose-a3/actions/runs/45018725875,
+MAIN-4,Baseline,multi_agent,issue-4,stage4_halted_1_new_test_failed,True,True,0,8,NO_PR,APPROVE,25250,https://github.com/Shruthi150/autose-a3/actions/runs/45018725875,
 MAIN-5,Baseline,multi_agent,issue-5,stage6_complete,True,True,12,12,APPROVE,APPROVE,9489,https://github.com/Shruthi150/autose-a3/actions/runs/45019273789,https://github.com/Shruthi150/autose-a3/pull/9
 EXP1-1,ADR-001,monolithic,issue-1,single_shot_failed,False,False,0,8,N/A,N/A,7648,local_eval_monolithic,
 EXP1-2,ADR-001,monolithic,issue-2,single_shot_failed,False,False,0,14,N/A,N/A,4971,local_eval_monolithic,

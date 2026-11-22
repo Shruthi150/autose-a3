@@ -5,11 +5,11 @@ Autonomous multi-agent GitHub Actions workflow that turns a GitHub issue into a 
 - **Target Repository**: Pinned copy/import of [msiemens/tinydb](https://github.com/msiemens/tinydb) at commit **`edff96a`** (imported directly from upstream `edff96a` into `Shruthi150/autose-a3`)
 - **Model**: Google Gemini **`gemini-3.1-flash-lite`** (free-tier compatible, with RPM backoff and logged fallback to `gemini-3.5-flash-lite` / `gemini-3.5-flash` / `gemini-3.6-flash`)
 - **Workflow File**: [`.github/workflows/autose.yml`](.github/workflows/autose.yml) + [`.github/workflows/autose-ci.yml`](.github/workflows/autose-ci.yml)
-- **Demo Video**: *(Add your $\le 5$-minute demo link or `demo.mp4` here before final submission)*
+- **Demo Video**: [`demo.mp4`](demo.mp4) (included in the repository root)
 
 ## Cost, Spending Limit & Token Usage
 - **Hard Spending Limit**: Runs exclusively on a Google AI Studio **Free-Tier** API key with no billing account attached (hard \$0.00 spending cap enforced by provider).
-- **Measured Token Usage**: **`96,089` total measured tokens** (`57,581` across the 4 completed GitHub Actions build runs: #1 `12,627`, #2 `9,493`, #3 `25,972`, #5 `9,489`; plus `27,073` across Experiment 1 monolithic runs; plus `11,435` across Experiment 2 seeded-PR review calls; excludes Issue #4's halted `state.json`, Stage 6 reviewer calls, and earlier diagnostic runs; **\$0.00 spent**).
+- **Measured Token Usage**: **`121,339` total measured tokens** (`82,831` across all 5 GitHub Actions build runs: #1 `12,627`, #2 `9,493`, #3 `25,972`, #4 `25,250`, #5 `9,489`; plus `27,073` across Experiment 1 monolithic runs; plus `11,435` across Experiment 2 seeded-PR review calls; excludes Stage 6 reviewer calls on PRs #6–#9 and earlier diagnostic runs; **\$0.00 spent**).
 - **Hidden-Test Isolation & Post-Run Hardening**: `experiment/hidden_tests/` was kept outside the repository during all 5 GitHub Actions runs and committed afterward for grading. After the 5 runs, `autose.yml` was further hardened to run `rm -rf experiment/hidden_tests` in all 4 jobs, set `persist-credentials: false` on all checkouts (using an ephemeral push auth header instead of `.git/config`), run the collaborator auth gate before `pip install -e .`, and scope `concurrency` (one pending slot, `cancel-in-progress: false`) to `implement_and_release`.
 - **Branch Protection**: `main` and `master` have GitHub branch protection requiring pull requests before merging (repository admins may bypass for direct docs/workflow fixes; workflow bot tokens never push to `main`/`master`).
 
