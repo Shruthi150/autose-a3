@@ -33,4 +33,4 @@ The pipeline runs across **four GitHub Actions jobs** enforcing least-privilege 
 See [`architecture/views/`](architecture/views/) and [`architecture/decisions/`](architecture/decisions/) for the component view, sequence view, stage map, and all 10 ADRs.
 
 ## AI Assistance Disclosure
-In accordance with course policy: AI coding assistants (Google Antigravity / Gemini & Claude) were used to help scaffold and debug the Python workflow scripts, GitHub Actions YAML, and documentation formatting. All architectural trade-offs, ADR reasoning, and experimental evaluations were reviewed and verified against real executions.
+In accordance with course policy: **DeepSeek** and **Google Gemini (Antigravity)** were used copiously to assist with scaffolding and debugging the Python workflow scripts, GitHub Actions YAML, diagrams, and document/report formatting. All generated files and results were reviewed and verified against real runs, and the original architectural ideas and reasoning behind the decisions are my own.
