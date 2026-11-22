@@ -622,6 +622,40 @@ class Table:
         # data as a new document
         return [self.insert(document)]
 
+    def upsert_multiple(self, items: Iterable[tuple[Mapping, QueryLike]]) -> list[int]:
+        """
+        Update documents, if they exist, insert them otherwise.
+
+        :param items: an iterable of (document, query) tuples
+        :returns: a list containing the IDs of all affected documents
+        """
+        affected_ids: list[int] = []
+
+        def updater(table: dict):
+            for document, cond in items:
+                if not isinstance(document, Mapping):
+                    raise TypeError('Document is not a Mapping')
+
+                # Find matching IDs
+                matches = [
+                    doc_id for doc_id, doc in table.items()
+                    if cond(doc)
+                ]
+
+                if matches:
+                    # Update existing documents
+                    for doc_id in matches:
+                        table[doc_id].update(document)
+                        affected_ids.append(doc_id)
+                else:
+                    # Insert new document
+                    doc_id = self._get_next_id()
+                    table[doc_id] = dict(document)
+                    affected_ids.append(doc_id)
+
+        self._update_table(updater)
+        return affected_ids
+
     def remove(
         self,
         cond: Optional[QueryLike] = None,
