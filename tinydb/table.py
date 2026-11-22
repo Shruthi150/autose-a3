@@ -645,18 +645,17 @@ class Table:
             # ``get(doc_ids=...)`` (see issue #591). The list of *actually*
             # removed IDs is determined inside the updater so it reflects the
             # table state at write time.
-            requested_ids = list(doc_ids)
+            requested_ids = set(doc_ids)
             removed_ids: list[int] = []
 
             def updater(table: dict):
                 # Filter to IDs that exist *before* performing any removals,
                 # so the operation is atomic: either every existing target is
                 # removed, or none is.
-                removed_ids.extend(
-                    doc_id for doc_id in requested_ids if doc_id in table
-                )
-                for doc_id in removed_ids:
-                    del table[doc_id]
+                for doc_id in requested_ids:
+                    if doc_id in table:
+                        removed_ids.append(doc_id)
+                        table.pop(doc_id)
 
             # Perform the remove operation
             self._update_table(updater)
