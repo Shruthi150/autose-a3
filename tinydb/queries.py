@@ -473,7 +473,7 @@ class Query(QueryInstance):
             ('all', self._path, freeze(cond))
         )
 
-    def one_of(self, items: list[Any]) -> QueryInstance:
+    def one_of(self, items: Any) -> QueryInstance:
         """
         Check if the value is contained in a list or generator.
 
@@ -481,9 +481,10 @@ class Query(QueryInstance):
 
         :param items: The list of items to check with
         """
+        items_tuple = tuple(items)
         return self._generate_test(
-            lambda value: value in items,
-            ('one_of', self._path, freeze(items))
+            lambda value: value in items_tuple,
+            ('one_of', self._path, freeze(items_tuple))
         )
 
     def fragment(self, document: Mapping) -> QueryInstance:
