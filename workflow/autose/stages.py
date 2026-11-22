@@ -5,6 +5,7 @@ Each run_stageN returns the artifact plus a pass/fail verdict decided by code
 """
 from __future__ import annotations
 
+import difflib
 import re
 from pathlib import Path
 
@@ -81,6 +82,56 @@ def design_files(design_md: str, repo_root: str | Path) -> list[str]:
     return out
 
 
+def _apply_search_replace(text: str, search: str, replace: str) -> tuple[str | None, str]:
+    """Apply a SEARCH/REPLACE block: exact match first, then whitespace-normalized, then high-confidence fuzzy window."""
+    text_n = text.replace("\r\n", "\n")
+    search_n = search.replace("\r\n", "\n")
+    replace_n = replace.replace("\r\n", "\n")
+
+    n = text_n.count(search_n)
+    if n == 1:
+        return text_n.replace(search_n, replace_n), "exact"
+    if n > 1:
+        return None, f"matched {n} times (need exactly 1)"
+
+    # Fallback: sliding window over lines with SequenceMatcher (handles minor comment wrapping by Flash-Lite)
+    t_lines = text_n.splitlines(keepends=True)
+    s_lines = search_n.splitlines(keepends=True)
+    if not s_lines or len(s_lines) > len(t_lines):
+        return None, "matched 0 times"
+
+    s_norm = "\n".join(line.strip() for line in s_lines)
+    s_code = "\n".join(line.strip() for line in s_lines if line.strip() and not line.strip().startswith("#"))
+    scored: list[tuple[float, int, int]] = []
+    for delta in (0, -1, 1, -2, 2):
+        win = len(s_lines) + delta
+        if win <= 0 or win > len(t_lines):
+            continue
+        for i in range(len(t_lines) - win + 1):
+            win_lines = t_lines[i : i + win]
+            cand_norm = "\n".join(line.strip() for line in win_lines)
+            full_r = difflib.SequenceMatcher(None, s_norm, cand_norm).ratio()
+            if full_r < 0.70:
+                continue
+            cand_code = "\n".join(line.strip() for line in win_lines if line.strip() and not line.strip().startswith("#"))
+            code_r = difflib.SequenceMatcher(None, s_code, cand_code).ratio() if s_code else full_r
+            ratio = 0.7 * code_r + 0.3 * full_r
+            scored.append((ratio, i, i + win))
+
+    if not scored:
+        return None, "matched 0 times (no fuzzy candidate >= 0.70)"
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    best_ratio, bi, bj = scored[0]
+    second_ratio = max((r for r, i, j in scored[1:] if j <= bi or i >= bj), default=0.0)
+
+    if best_ratio >= 0.82 and (best_ratio - second_ratio) >= 0.03:
+        rep = replace_n if replace_n.endswith("\n") else replace_n + "\n"
+        new_text = "".join(t_lines[:bi]) + rep + "".join(t_lines[bj:])
+        return new_text, f"fuzzy({best_ratio:.2f})"
+    return None, f"matched 0 times (best fuzzy ratio={best_ratio:.2f}, next non-overlapping={second_ratio:.2f})"
+
+
 # ----------------- STAGE 3: IMPLEMENTATION -----------------
 def run_stage3_implementation(
     design_md: str,
@@ -98,7 +149,7 @@ Change the code as the design says. Do NOT rewrite whole files. Output ONLY edit
 
 FILE: tinydb/example.py
 <<<<<<< SEARCH
-exact existing lines, character for character, with enough context to be unique
+exact existing code lines copied verbatim (keep blocks short: 3-8 lines of code, avoid long comment blocks)
 =======
 replacement lines
 >>>>>>> REPLACE
@@ -118,10 +169,10 @@ Use as many blocks as needed. Do not write tests. Keep public behaviour backward
             return "", False, f"Edit targets {fname}, which the design did not list."
         path = Path(repo_root) / fname
         text = path.read_text(encoding="utf-8")
-        n = text.count(search)
-        if n != 1:
-            return "", False, f"SEARCH block for {fname} matched {n} times (need exactly 1):\n{search[:300]}"
-        path.write_text(text.replace(search, replace), encoding="utf-8")
+        updated, how = _apply_search_replace(text, search, replace)
+        if updated is None:
+            return "", False, f"SEARCH block for {fname} {how}:\n{search[:300]}"
+        path.write_text(updated, encoding="utf-8")
 
     ok, msg = compile_check(repo_root, target_files)
     if ok:
