@@ -1,39 +1,30 @@
-# Architecture Sequence View (One Complete Run)
+# Architecture Sequence View (Real Run: Issue #1 -> Run 45017452563 -> PR #6)
+
+![Architecture Sequence View](sequence_view.png)
+
+## Mermaid Diagram (Source)
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Maintainer
     participant GH as GitHub Actions
-    participant Build as Job 1: implement_and_release (write)
+    participant Build as Job 1 implement_and_release
     participant CI as autose-ci.yml
-    participant Rev1 as Job 2: review_round_1 (read-only)
-    participant Rework as Job 3: rework_round_1 (write, if needed)
-    participant Rev2 as Job 4: review_round_2 (read-only, if needed)
+    participant Rev1 as Job 2 review_round_1 (read-only)
 
-    Maintainer->>GH: Comment "/autose" or add label "autose" on Issue #N
-    GH->>Build: Trigger workflow (concurrency group autose-issue-N)
-    Build->>GH: Check collaborator permission (admin/maintain/write)
-    Build->>Build: Stage 1 (Requirements) -> spec.md [Check: >=2 AC-N + Public API]
-    Build->>Build: Stage 2 (Design) -> design.md [Check: existing tinydb/*.py + functions]
-    loop Up to 3 attempts
-        Build->>Build: Stage 3 (Implementation) -> SEARCH/REPLACE + py_compile -> diff.patch
-        Build->>Build: Stage 4 (Testing) -> write tests from spec.md + run full pytest -> test_report.md
-    end
-    Build->>GH: Stage 5: git push autose/issue-N & gh pr create
-    Build->>CI: Explicitly dispatch autose-ci.yml (workflow_dispatch) & poll until success
-    CI-->>Build: CI conclusion: success -> save pr.md + upload build artifacts
-
-    GH->>Rev1: Start isolated job (contents: read, NO push permission)
+    Maintainer->>GH: Comment /autose on Issue 1
+    GH->>Build: Trigger workflow and check collaborator permissions
+    Build->>Build: Stage 1 Requirements -> spec.md
+    Build->>Build: Stage 2 Design -> design.md
+    Build->>Build: Stage 3 Implementation -> diff.patch (py_compile pass)
+    Build->>Build: Stage 4 Testing -> test_report.md (new + 228 existing pass)
+    Build->>GH: Stage 5 git push autose/issue-1 and gh pr create (PR 6)
+    Build->>CI: Dispatch autose-ci.yml via workflow_dispatch and poll
+    CI-->>Build: CI conclusion success -> save pr.md and upload artifacts
+    GH->>Rev1: Start isolated job (contents read, NO push permission)
     Rev1->>Rev1: Checkout PR branch, compute git diff, run pytest itself
-    Rev1->>Rev1: Stage 6: Cold-start review (issue + diff + pytest only) -> review.md
-    Rev1->>GH: Post review comment on PR #P
-    alt Verdict == REQUEST_CHANGES
-        GH->>Rework: Download build + review1 artifacts
-        Rework->>Rework: Route APPROACH->Stage 2 or CODE->Stage 3, re-test, push & run CI
-        GH->>Rev2: Start isolated round-2 review (contents: read)
-        Rev2->>GH: Post final review comment on PR #P (max 2 rounds reached)
-    end
-    GH-->>Maintainer: PR ready with all artifacts and independent review
-    Maintainer->>GH: Human decides whether to merge or close
+    Rev1->>Rev1: Stage 6 blind review (issue + diff + pytest only) -> review.md
+    Rev1->>GH: Post DECISION APPROVE comment on PR 6
+    GH-->>Maintainer: PR 6 ready for human merge or close decision
 ```
