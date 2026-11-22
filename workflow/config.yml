@@ -3,13 +3,13 @@ trigger_label: autose
 allowed_permissions: [admin, maintain, write]
 
 models:
-  requirements: gemini-3.5-flash
-  design: gemini-3.5-flash
-  implementer: gemini-3.5-flash
-  tester: gemini-3.5-flash
-  judge: gemini-3.5-flash
-  pr_writer: gemini-3.5-flash
-  reviewer: gemini-3.5-flash-lite       # Distinct model / profile for independent review
+  requirements: gemini-3.1-flash-lite
+  design: gemini-3.1-flash-lite
+  implementer: gemini-3.1-flash-lite
+  tester: gemini-3.1-flash-lite
+  judge: gemini-3.1-flash-lite
+  pr_writer: gemini-3.1-flash-lite
+  reviewer: gemini-3.1-flash-lite       # Distinct model / profile for independent review
 
 budgets:
   max_turns:
