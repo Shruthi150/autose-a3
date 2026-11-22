@@ -22,7 +22,8 @@ def run_cmd(cmd: list[str], cwd: str | Path, timeout: int = 120) -> tuple[int, s
 
 def run_tests(repo_root: str | Path, test_file: str | None = None) -> tuple[bool, str]:
     """Execute pytest suite."""
-    cmd = ["python", "-m", "pytest", "-v", "-p", "no:cacheprovider"]
+    # -o addopts= : the repo's pytest.ini adds --cov flags that need pytest-cov; we only want pass/fail.
+    cmd = ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-o", "addopts="]
     if test_file:
         cmd.append(test_file)
     ret, stdout, stderr = run_cmd(cmd, cwd=repo_root, timeout=180)
