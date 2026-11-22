@@ -6,6 +6,8 @@ Accepted
 ## Context
 Granting arbitrary shell access or broad `GITHUB_TOKEN` permissions to LLM agents creates security and reliability risks (secret leakage, accidental pushes, editing workflow files).
 
+Rejected alternative: Giving LLM agents an unrestricted bash/shell execution tool and sharing write permissions across all stages.
+
 ## Decision
 We enforce least privilege at both the Python and GitHub Actions layers:
 - **No free-form shell tool for LLMs**: Agents emit structured outputs (Markdown specs/designs, `SEARCH/REPLACE` edit blocks, Python test files). Deterministic Python code in `tools.py` applies edits, validates paths (only `tinydb/*.py` listed by Design), and runs `py_compile` and `pytest`.

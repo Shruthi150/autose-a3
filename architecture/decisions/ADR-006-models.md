@@ -1,22 +1,18 @@
-# ADR-006: Free-Tier Gemini Model Selection and Quota-Aware Fallback
+# ADR-006: Heterogeneous Gemini Model Allocation Across SDLC Stages
 
 ## Status
-Superseded by [ADR-011](ADR-011-free-tier-model-fallback.md) (early runs with `gemini-2.5-flash`, `gemini-3.5-flash`, and `gemini-3.6-flash` hit 404 deprecation or 20-RPD free-tier `429 RESOURCE_EXHAUSTED` limits).
+Superseded by [ADR-011](ADR-011-free-tier-model-fallback.md) (early runs with `gemini-2.5-flash`, `gemini-3.5-flash`, `gemini-3.6-flash`, and `gemini-3.1-pro-preview` hit `404 NOT_FOUND` deprecation or free-tier `429 RESOURCE_EXHAUSTED` caps).
 
 ## Context
-Running six stages across five issues plus decision experiments requires dozens of LLM calls. Under a Google AI Studio Free-Tier API key:
-- Pro-tier models (`gemini-3.1-pro`) have 0 free-tier quota.
-- `gemini-2.5-flash` is deprecated for new keys (404).
-- `gemini-3.5-flash` and `gemini-3.6-flash` hit daily request caps (~20 RPD) quickly when retries occur.
+Different SDLC stages have different cognitive demands: Requirements, Design, and Testing require fast structured generation, while Independent Review benefits from stronger semantic reasoning and a distinct model family to avoid shared blind spots.
+
+Rejected alternative: Using a single uniform model across all stages.
 
 ## Decision
-We standardize on **`gemini-3.1-flash-lite`** across all roles in `workflow/config.yml`, backed by a quota-aware client (`workflow/autose/llm.py`) with:
-- Automatic wait-and-retry on short per-minute (RPM) 429 limits ($\le 90\text{s}$).
-- Automatic fallback to `gemini-3.5-flash-lite` $\rightarrow$ `gemini-3.5-flash` $\rightarrow$ `gemini-3.6-flash` only when a daily quota cap is exhausted.
-- Gentle 2-second pacing between calls and exact token tracking (`usage_metadata`).
-
-Because the reviewer shares the `gemini-3.1-flash-lite` model family under free-tier constraints, reviewer independence is enforced through **job/context/prompt isolation** (ADR-008) rather than model heterogeneity.
+Allocate Google Gemini models heterogeneously:
+- **Flash tier (`gemini-2.5-flash` / `gemini-3.5-flash`)** for Requirements (S1), Design (S2), Implementation (S3), and Testing (S4) for speed and low latency.
+- **Pro tier (`gemini-2.5-pro` / `gemini-3.1-pro-preview`)** for the Independent Reviewer (S6) to maximize defect detection and provide model diversity.
 
 ## Consequences
-- Zero API cost while maintaining reliable completion of multi-stage runs.
-- Slightly lower single-shot reasoning depth than a Pro model, compensated by structured edit blocks (`SEARCH/REPLACE`) and deterministic `pytest` verification loops.
+- Intended to balance fast inner loops with strong independent review.
+- **Outcome in practice**: Failed under a Google AI Studio Free-Tier key because Pro models had 0 free-tier quota and Flash models hit 20-RPD caps, leading to [ADR-011](ADR-011-free-tier-model-fallback.md).

@@ -6,6 +6,8 @@ Accepted
 ## Context
 An LLM reviewer that sees the implementer's reasoning, spec, or design tends to agree with the implementer's rationalizations and approve buggy or incomplete PRs.
 
+Rejected alternative: Running the reviewer inside the same GitHub Actions job with access to the implementer's conversation, spec, design, and test logs.
+
 ## Decision
 We enforce four concrete independence barriers in Stage 6:
 1. **Separate GitHub Actions Job (`review_round_1` / `review_round_2`)**: Runs on a fresh runner checkout of the PR branch, with zero shared memory or conversation state from `implement_and_release`.

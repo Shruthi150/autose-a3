@@ -27,22 +27,27 @@ flowchart TD
     end
 
     subgraph Job3["Job 3: rework_round_1 (conditional on REQUEST_CHANGES, contents: write)"]
-        RW["Route: APPROACH -> Stage 2 | CODE -> Stage 3 -> Stage 4 -> push & CI"]
+        RW["Route: APPROACH -> Stage 2 | CODE -> Stage 3 -> Stage 4 -> Stage 5 (push + CI)"]
     end
 
     subgraph Job4["Job 4: review_round_2 (contents: read, pull-requests: write — NO PUSH)"]
         S6B["Stage 6: Independent Reviewer Round 2\n(Max 2 rounds -> review_round_2.md)"]
     end
 
+    Halt["Halt Run\n(Write FAILED.md + upload artifacts)"]
     Human["Human Maintainer\n(Final Merge / Close Decision — Never Automated)"]
 
     Auth --> S1 --> G1
+    G1 -- Fail --> Halt
     G1 -- Pass --> S2 --> G2
+    G2 -- Fail --> Halt
     G2 -- Pass --> S3 --> G3
     G3 -- Fail --> S3
     G3 -- Pass --> S4 --> G4
     G4 -- "Fail (<=3 attempts)" --> S3
+    G4 -- "Budget Exhausted" --> Halt
     G4 -- Pass --> S5 --> G5
+    G5 -- Fail --> Halt
     G5 -- Pass --> S6A --> G6A
     G6A -- APPROVE --> Human
     G6A -- REQUEST_CHANGES --> RW --> S6B --> Human

@@ -1,19 +1,18 @@
-# ADR-012: Explicit `Public API` and Error-Semantics Contracts in `spec.md`
+# ADR-012: Explicit Error-Semantics Contracts in `spec.md` and `SKILL.md`
 
 ## Status
 Accepted (Supersedes [ADR-003](ADR-003-hand-offs.md))
 
 ## Context
-Under ADR-003, Stage 4 (Testing) received only `spec.md` and deliberately did not see `design.md` or Stage 3's implementation. During the live GitHub Actions run for Issue #4 (`Query.startswith()`/`endswith()`, Run `45018725875`), this information hiding caused a deadlock:
-- Stage 4 wrote `test_type_mismatch_edge_case` asserting that `Query().name.startswith(123)` raises `TypeError` eagerly at query construction time.
-- Stage 3 implemented `startswith()` lazily (matching TinyDB's `matches()`/`search()`), returning a `QueryInstance` that evaluates to `False` on non-strings.
-- Across all 3 attempts, 5/6 new tests + 228/228 existing tests passed, but that single disagreement halted the run at Stage 4.
+Under ADR-003, Stage 4 (Testing) received only `spec.md` (which already required a `## Public API` section verified by Gate 1) and deliberately did not see `design.md` or Stage 3's implementation. During the live GitHub Actions run for Issue #4 (`Query.startswith()`/`endswith()`, Run `45018725875`), this left one crucial gap:
+- `spec.md` named the `startswith()`/`endswith()` signatures, but did **not** specify whether passing a non-string argument (`Query().name.startswith(123)`) should raise `TypeError` eagerly at query construction time or evaluate lazily to `False`.
+- Stage 4 asserted an eager `TypeError` (`test_type_mismatch_edge_case`), while Stage 3 matched TinyDB's lazy query pattern. Across all 3 retries, 5/6 new tests + 228/228 existing tests passed, but that single contradiction halted the run at Stage 4.
+
+Rejected alternative: Sharing `design.md` or Stage 3's implementation with Stage 4 (which would weaken test independence and invite tests that mirror implementation quirks).
 
 ## Decision
-We keep Stage 4 isolated from Stage 2/3 (preserving test independence), but tighten the Stage 1 (`spec.md`) hand-off contract:
-1. `spec.md` MUST include a `## Public API` section (enforced by Gate 1) specifying exact method signatures, return types, and invalid-input/error semantics (eager exception vs. lazy `False`).
-2. `workflow/skills/spec-skill/SKILL.md` explicitly prompts Stage 1 to state assumptions on edge cases (empty inputs, duplicates, non-strings, missing keys, one-shot iterators).
+Keep Stage 4 isolated from Stage 2/3, and extend the Stage 1 specification skill (`workflow/skills/spec-skill/SKILL.md`) to require explicit **error and invalid-input semantics** (eager exception vs. lazy `False` return) alongside edge cases (empty inputs, duplicates, non-strings, missing keys, one-shot iterators).
 
 ## Consequences
-- Preserves anti-sycophancy test independence while reducing spec-ambiguity deadlocks between Stage 3 and Stage 4.
-- Adds slightly stricter formatting requirements to `spec.md`, enforced deterministically at Gate 1.
+- Preserves independent spec-driven testing while directly addressing the ambiguity that halted Issue #4.
+- **Untested caveat**: Issue #4 was not re-run in GitHub Actions after adding this guidance, so its effect on Issue #4's pass rate remains an untested design improvement rather than a verified re-run.

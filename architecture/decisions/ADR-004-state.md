@@ -6,6 +6,8 @@ Accepted
 ## Context
 State must survive across GitHub Actions jobs (`implement_and_release` $\rightarrow$ `review_round_1` $\rightarrow$ `rework_round_1` $\rightarrow$ `review_round_2`), remain inspectable by humans, and never pollute the PR's git diff with scratchpads.
 
+Rejected alternative: Committing intermediate artifacts (`spec.md`, `design.md`, `test_report.md`) directly onto the PR branch, which clutters the PR diff and git history.
+
 ## Decision
 We store state in two clean layers:
 1. **PR Branch (`autose/issue-N`)**: Holds ONLY code changes under `tinydb/` and tests under `tests/test_autose_issue_N.py` (`git add tinydb tests`).

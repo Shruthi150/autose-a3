@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: autose-issue-${{ github.event.issue.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   implement_and_release:
@@ -101,6 +101,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Remove Hidden Tests from Workspace (Anti-Leakage)
+        run: rm -rf experiment/hidden_tests
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -151,6 +154,9 @@ jobs:
         with:
           ref: ${{ needs.implement_and_release.outputs.branch }}
           fetch-depth: 0
+
+      - name: Remove Hidden Tests from Workspace (Anti-Leakage)
+        run: rm -rf experiment/hidden_tests
 
       - name: Download Build & Review Artifacts
         uses: actions/download-artifact@v4
@@ -211,6 +217,9 @@ jobs:
           ref: ${{ needs.implement_and_release.outputs.branch }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Remove Hidden Tests from Workspace (Anti-Leakage)
+        run: rm -rf experiment/hidden_tests
 
       - name: Set up Python
         uses: actions/setup-python@v5

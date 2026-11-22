@@ -6,6 +6,8 @@ Accepted
 ## Context
 LLMs frequently claim their code "works and passes tests" without running a compiler or test runner. Every stage hand-off must be gated by objective, deterministic checks.
 
+Rejected alternative: Relying on LLM self-certification or an LLM-only judge to decide whether code builds or tests pass.
+
 ## Decision
 No agent can self-certify a stage. External Python code evaluates every gate:
 1. **Stage 1 (Requirements)**: Regex checks $\ge 2$ distinct `AC-N` criteria and a `Public API` section in `spec.md`.

@@ -6,6 +6,8 @@ Accepted
 ## Context
 Issues and comments on a public repository can be authored by anyone on the internet, making prompt injection and quota exhaustion primary operational risks.
 
+Rejected alternative: Allowing any public user to trigger workflows directly and interpolating raw issue bodies into shell `run:` blocks.
+
 ## Decision
 1. **Maintainer Authorization Gate (D10)**: Before any LLM call, `autose.yml` queries `gh api repos/$REPO/collaborators/$ACTOR/permission` and aborts unless the actor has `admin`, `maintain`, or `write` permission.
 2. **Untrusted Data Isolation (`security.py`)**: Issue titles and bodies are stripped of null bytes, neutralized against tag breakouts (`</untrusted...>`), truncated to 8,000 chars, and wrapped in `<untrusted_issue_body>...</untrusted_issue_body>` with an explicit system instruction treating them as data only.
