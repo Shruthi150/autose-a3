@@ -79,6 +79,19 @@ def trigger_and_wait_ci(
     wait_seconds: int = 180,
 ) -> tuple[bool, str]:
     """Dispatch autose-ci.yml on branch (PRs opened by GITHUB_TOKEN don't trigger CI) and wait for completion."""
+    prev_id = 0
+    try:
+        prev = subprocess.run(
+            ["gh", "run", "list", "--workflow", workflow_name, "--branch", branch,
+             "--event", "workflow_dispatch", "--limit", "1", "--json", "databaseId"],
+            cwd=str(repo_root), capture_output=True, text=True, check=False,
+        )
+        items = json.loads(prev.stdout or "[]")
+        if items:
+            prev_id = int(items[0].get("databaseId", 0))
+    except Exception:
+        pass
+
     try:
         subprocess.run(
             ["gh", "workflow", "run", workflow_name, "--ref", branch],
@@ -96,13 +109,14 @@ def trigger_and_wait_ci(
                     "gh", "run", "list",
                     "--workflow", workflow_name,
                     "--branch", branch,
+                    "--event", "workflow_dispatch",
                     "--limit", "1",
                     "--json", "databaseId,status,conclusion,url",
                 ],
                 cwd=str(repo_root), capture_output=True, text=True, check=True,
             )
             runs = json.loads(res.stdout or "[]")
-            if runs:
+            if runs and int(runs[0].get("databaseId", 0)) != prev_id:
                 run = runs[0]
                 status = run.get("status", "")
                 conclusion = run.get("conclusion", "")
