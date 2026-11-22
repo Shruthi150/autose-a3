@@ -4,7 +4,7 @@
 Superseded by [ADR-012](ADR-012-explicit-api-and-error-contracts.md) (after Issue #4 halted at Stage 4 due to an unspecified eager-vs-lazy `TypeError` contract between Stage 1, Stage 3, and Stage 4).
 
 ## Context
-Passing full conversation histories across stages causes context bloat, higher token cost, and confirmation bias (especially in testing and review).
+Passing full conversation histories across stages grows prompt size, increases token cost, and makes later stages agree with earlier mistakes (especially in testing and review).
 
 Rejected alternative: Passing the full upstream conversation log and intermediate reasoning into every downstream stage.
 
@@ -16,5 +16,5 @@ Each stage receives only a minimal, explicit contract:
 - **Stage 5 $\rightarrow$ Stage 6**: Original issue title/body, `git diff origin/<base>...HEAD`, and the reviewer's own `pytest` output (deliberately withheld: `spec.md`, `design.md`, `test_report.md`, and all implementer logs).
 
 ## Consequences
-- Reduces prompt tokens and prevents sycophantic self-verification.
+- Reduces prompt tokens and keeps the tester from copying the implementer's assumptions.
 - Requires `spec.md` to include an explicit `## Public API` section so Stage 4 knows exact signatures to test.

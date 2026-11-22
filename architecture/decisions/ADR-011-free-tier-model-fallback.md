@@ -15,7 +15,7 @@ We standardize all pipeline roles on **`gemini-3.1-flash-lite`** and update `wor
 2. Pace calls with a 2-second delay to avoid bursting RPM limits.
 3. Explicitly print `[autose-llm] model=<name> tokens=<in>+<out>` on every call so fallback is never silent and token usage is auditable.
 
-Because the reviewer uses the same model family under free-tier limits, reviewer independence relies on structural isolation (separate read-only job, fresh checkout, zero implementer context, adversarial prompt — ADR-008) rather than model heterogeneity.
+Because the reviewer uses the same model under free-tier limits, reviewer independence relies on isolation (separate read-only job, fresh checkout, zero implementer context, sceptical prompt — ADR-008) rather than a different model.
 
 ## Consequences
 - All 5 GitHub Actions runs and both decision experiments ran at \$0.00 cost under a hard Free-Tier cap.

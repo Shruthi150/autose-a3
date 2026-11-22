@@ -5,7 +5,7 @@ Accepted
 
 ## Context
 Our goal is to build an autonomous pipeline that converts a maintainer-triggered issue into a tested, verified, and independently reviewed pull request for TinyDB.
-We must decide how to divide cognitive labor across the six SDLC stages: Requirements, Design, Implementation, Testing, Release, and Review.
+We must decide how to divide the work across the six SDLC stages: Requirements, Design, Implementation, Testing, Release, and Review.
 
 Options:
 1. **Single Monolithic Agent**: One general agent handles the entire lifecycle in a single long-running conversation.
@@ -18,9 +18,9 @@ We choose **Specialized Micro-Agents**:
 - `ImplementationAgent`: Applies code edits to source files.
 - `TestingAgent`: Synthesizes tests directly from `spec.md` without seeing the implementer's thought trail.
 - `ReleaseAgent`: Deterministic git/GH CLI step opening the PR.
-- `IndependentReviewerAgent`: Cold-start adversarial review with zero implementer history.
+- `IndependentReviewerAgent`: Cold-start sceptical review with zero implementer history.
 
 ## Consequences
-- Prevents cognitive bias and self-testing sycophancy (Testing Agent tests against spec, not against its own code).
+- Prevents the tester from simply validating what it just wrote (Testing Agent tests against `spec.md`, not against the implementer's reasoning).
 - Keeps context windows small, predictable, and cost-effective.
 - Requires explicit serialization contracts (`spec.md`, `design.md`) between stages.
