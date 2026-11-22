@@ -1,7 +1,7 @@
 # ADR-006: Free-Tier Gemini Model Selection and Quota-Aware Fallback
 
 ## Status
-Accepted (Updated after hitting Free-Tier daily quota limits on `gemini-3.5-flash` and `gemini-3.6-flash`)
+Superseded by [ADR-011](ADR-011-free-tier-model-fallback.md) (early runs with `gemini-2.5-flash`, `gemini-3.5-flash`, and `gemini-3.6-flash` hit 404 deprecation or 20-RPD free-tier `429 RESOURCE_EXHAUSTED` limits).
 
 ## Context
 Running six stages across five issues plus decision experiments requires dozens of LLM calls. Under a Google AI Studio Free-Tier API key:

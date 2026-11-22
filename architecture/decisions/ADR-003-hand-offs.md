@@ -1,7 +1,7 @@
 # ADR-003: Contract-Based Hand-offs and Deliberate Information Hiding
 
 ## Status
-Accepted
+Superseded by [ADR-012](ADR-012-explicit-api-and-error-contracts.md) (after Issue #4 halted at Stage 4 due to an unspecified eager-vs-lazy `TypeError` contract between Stage 1, Stage 3, and Stage 4).
 
 ## Context
 Passing full conversation histories across stages causes context bloat, higher token cost, and confirmation bias (especially in testing and review).
