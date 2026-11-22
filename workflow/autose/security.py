@@ -43,7 +43,9 @@ def redact(text: str, extra: list[str] | None = None) -> str:
 
 def scrubbed_env(extra: dict[str, str] | None = None) -> dict[str, str]:
     """Environment for agent-spawned subprocesses: no secrets, no tokens."""
-    keep = ("PATH", "LANG", "LC_ALL", "PYTHONPATH", "VIRTUAL_ENV", "TZ")
+    # SYSTEMROOT and friends are required for Python to start on Windows; none of them hold secrets.
+    keep = ("PATH", "LANG", "LC_ALL", "PYTHONPATH", "VIRTUAL_ENV", "TZ",
+            "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "COMSPEC", "PATHEXT", "TEMP", "TMP")
     env = {k: v for k, v in os.environ.items() if k in keep}
     home = os.path.join(tempfile.gettempdir(), "autose-home")
     os.makedirs(home, exist_ok=True)
