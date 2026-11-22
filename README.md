@@ -2,9 +2,15 @@
 
 Autonomous multi-agent GitHub Actions workflow that turns a GitHub issue into a tested, CI-verified, and independently reviewed pull request on **TinyDB**.
 
-- **Target Repository**: Fork of [msiemens/tinydb](https://github.com/msiemens/tinydb) pinned at commit **`edff96a`**
-- **Model**: Google Gemini **`gemini-3.1-flash-lite`** (free-tier compatible, with automatic RPM backoff and fallback to `gemini-3.5-flash-lite` / `gemini-3.5-flash`)
+- **Target Repository**: Pinned copy/import of [msiemens/tinydb](https://github.com/msiemens/tinydb) at commit **`edff96a`** (imported directly from upstream `edff96a` into `Shruthi150/autose-a3`)
+- **Model**: Google Gemini **`gemini-3.1-flash-lite`** (free-tier compatible, with RPM backoff and logged fallback to `gemini-3.5-flash-lite` / `gemini-3.5-flash` / `gemini-3.6-flash`)
 - **Workflow File**: [`.github/workflows/autose.yml`](.github/workflows/autose.yml) + [`.github/workflows/autose-ci.yml`](.github/workflows/autose-ci.yml)
+- **Demo Video**: *(Add your $\le 5$-minute demo link or `demo.mp4` here before final submission)*
+
+## Cost, Spending Limit & Token Usage
+- **Hard Spending Limit**: Runs exclusively on a Google AI Studio **Free-Tier** API key with no billing account attached (hard \$0.00 spending cap enforced by provider).
+- **Measured Token Usage**: `27,073` tokens across Experiment 1 (5 monolithic runs), `11,435` tokens across Experiment 2 (10 seeded-PR review runs), and ~80,000 tokens across the 5 GitHub Actions runs (~118.5k tokens total; **\$0.00 spent**).
+- **Hidden-Test Isolation**: `experiment/hidden_tests/` was kept outside the repository during all 5 GitHub Actions runs (committed only afterward), and `autose.yml` deletes `experiment/hidden_tests/` immediately after checkout so agents can never read it on future runs.
 
 ## How to Trigger the Workflow
 A repository maintainer (`admin`, `maintain`, or `write` permission) can trigger the pipeline on any open issue by either:

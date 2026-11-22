@@ -65,6 +65,9 @@ def call_gemini(model: str, system_prompt: str, user_prompt: str,
                     inp = getattr(usage, "prompt_token_count", 0) or 0
                     out = getattr(usage, "candidates_token_count", 0) or 0
                     _token_hook(int(inp), int(out))
+                    print(f"[autose-llm] model={cand} tokens={int(inp)}+{int(out)}", flush=True)
+                else:
+                    print(f"[autose-llm] model={cand}", flush=True)
                 time.sleep(2)  # gentle pacing for free-tier RPM limits
                 return resp.text or ""
             except Exception as e:  # noqa: BLE001
