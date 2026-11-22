@@ -1,2 +1,21 @@
-run,issue,variant,stage_reached,verdict,hidden_tests,tokens,actions_run_url
-# Real results only. Rows are added after each real GitHub Actions run (see runs.md).
+experiment,decision,variant,target,stage_reached,builds,existing_tests_pass,hidden_tests_passed,hidden_tests_total,reviewer_verdict,expected_verdict,tokens,actions_run_url,pr_url
+MAIN-1,Baseline,multi_agent,issue-1,stage6_complete,True,True,8,8,APPROVE,APPROVE,measured_in_artifact,https://github.com/Shruthi150/autose-a3/actions/runs/45017452563,https://github.com/Shruthi150/autose-a3/pull/6
+MAIN-2,Baseline,multi_agent,issue-2,stage6_complete,True,True,14,14,APPROVE,APPROVE,measured_in_artifact,https://github.com/Shruthi150/autose-a3/actions/runs/45017663476,https://github.com/Shruthi150/autose-a3/pull/7
+MAIN-3,Baseline,multi_agent,issue-3,rework_round_1_halted,True,True,5,9,REQUEST_CHANGES,REQUEST_CHANGES,measured_in_artifact,https://github.com/Shruthi150/autose-a3/actions/runs/45017875028,https://github.com/Shruthi150/autose-a3/pull/8
+MAIN-4,Baseline,multi_agent,issue-4,stage4_halted,True,False,0,8,NO_PR,APPROVE,measured_in_artifact,https://github.com/Shruthi150/autose-a3/actions/runs/45018725875,
+MAIN-5,Baseline,multi_agent,issue-5,stage6_complete,True,True,12,12,APPROVE,APPROVE,measured_in_artifact,https://github.com/Shruthi150/autose-a3/actions/runs/45019273789,https://github.com/Shruthi150/autose-a3/pull/9
+EXP1-1,ADR-001,monolithic,issue-1,single_shot_failed,False,False,0,8,N/A,N/A,7648,local_eval_monolithic,
+EXP1-2,ADR-001,monolithic,issue-2,single_shot_failed,False,False,0,14,N/A,N/A,4971,local_eval_monolithic,
+EXP1-3,ADR-001,monolithic,issue-3,single_shot_failed,False,False,0,9,N/A,N/A,8364,local_eval_monolithic,
+EXP1-4,ADR-001,monolithic,issue-4,single_shot_passed,True,True,8,8,N/A,N/A,5195,local_eval_monolithic,
+EXP1-5,ADR-001,monolithic,issue-5,single_shot_passed,True,True,12,12,N/A,N/A,895,local_eval_monolithic,
+EXP2-1,ADR-008,blind_independent,pr-1,review_only,N/A,N/A,N/A,N/A,APPROVE,APPROVE,1214,local_eval_seeded,
+EXP2-2,ADR-008,shared_context,pr-1,review_only,N/A,N/A,N/A,N/A,APPROVE,APPROVE,1213,local_eval_seeded,
+EXP2-3,ADR-008,blind_independent,pr-2,review_only,N/A,N/A,N/A,N/A,REQUEST_CHANGES,REQUEST_CHANGES,1208,local_eval_seeded,
+EXP2-4,ADR-008,shared_context,pr-2,review_only,N/A,N/A,N/A,N/A,APPROVE,REQUEST_CHANGES,1207,local_eval_seeded,
+EXP2-5,ADR-008,blind_independent,pr-3,review_only,N/A,N/A,N/A,N/A,REQUEST_CHANGES,REQUEST_CHANGES,1325,local_eval_seeded,
+EXP2-6,ADR-008,shared_context,pr-3,review_only,N/A,N/A,N/A,N/A,REQUEST_CHANGES,REQUEST_CHANGES,1324,local_eval_seeded,
+EXP2-7,ADR-008,blind_independent,pr-4,review_only,N/A,N/A,N/A,N/A,REQUEST_CHANGES,REQUEST_CHANGES,960,local_eval_seeded,
+EXP2-8,ADR-008,shared_context,pr-4,review_only,N/A,N/A,N/A,N/A,REQUEST_CHANGES,REQUEST_CHANGES,959,local_eval_seeded,
+EXP2-9,ADR-008,blind_independent,pr-5,review_only,N/A,N/A,N/A,N/A,REQUEST_CHANGES,REQUEST_CHANGES,1013,local_eval_seeded,
+EXP2-10,ADR-008,shared_context,pr-5,review_only,N/A,N/A,N/A,N/A,REQUEST_CHANGES,REQUEST_CHANGES,1012,local_eval_seeded,
