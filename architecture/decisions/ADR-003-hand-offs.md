@@ -6,6 +6,8 @@ Superseded by [ADR-012](ADR-012-explicit-api-and-error-contracts.md) (after Issu
 ## Context
 Passing full conversation histories across stages causes context bloat, higher token cost, and confirmation bias (especially in testing and review).
 
+Rejected alternative: Passing the full upstream conversation log and intermediate reasoning into every downstream stage.
+
 ## Decision
 Each stage receives only a minimal, explicit contract:
 - **Stage 1 $\rightarrow$ Stage 2**: `spec.md` + `ARCHITECTURE.md` (withheld: raw user metadata).

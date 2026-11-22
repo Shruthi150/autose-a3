@@ -5,8 +5,11 @@ Each run_stageN returns the artifact plus a pass/fail verdict decided by code
 """
 from __future__ import annotations
 
+import base64
 import difflib
+import os
 import re
+import subprocess
 from pathlib import Path
 
 from .config import spec_skill
@@ -236,10 +239,16 @@ def run_stage5_release(
         if rc_c != 0:
             return 0, "", f"# Release failed\nCommit error: {err_c}\n{out_c}", False, err_c
 
-    # Push uses default env? No, actions/checkout stores auth in .git/config, so scrubbed_env works
-    rc_p, out_p, err_p = run_cmd(["git", "push", "-u", "origin", branch, "--force"], cwd=repo_root)
-    if rc_p != 0:
-        return 0, "", f"# Release failed\nPush error: {err_p}\n{out_p}", False, err_p
+    # Push using ephemeral Basic auth header from GITHUB_TOKEN (never persisted in .git/config)
+    token = os.environ.get("GITHUB_TOKEN", "")
+    push_cmd = ["git"]
+    if token:
+        b64 = base64.b64encode(f"x-access-token:{token}".encode()).decode()
+        push_cmd += ["-c", f"http.https://github.com/.extraheader=AUTHORIZATION: basic {b64}"]
+    push_cmd += ["push", "-u", "origin", branch, "--force"]
+    res_p = subprocess.run(push_cmd, cwd=str(repo_root), capture_output=True, text=True)
+    if res_p.returncode != 0:
+        return 0, "", f"# Release failed\nPush error: {res_p.stderr}\n{res_p.stdout}", False, res_p.stderr
 
     title = f"[AutoSE] Fix for issue #{issue_number}"
     body = (

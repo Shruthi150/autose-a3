@@ -21,9 +21,9 @@ All runs below are real GitHub Actions executions on `Shruthi150/autose-a3` (pin
 
 ## Decision Experiment 2: Seeded PRs (`experiment/seeded_prs/`)
 
-Executed locally via `python -m workflow.autose.eval_seeded` with `gemini-3.1-flash-lite` (1 run per cell, 11,435 measured tokens):
+Executed locally via `python -m workflow.autose.eval_seeded` with `gemini-3.1-flash-lite` (diff-only, 1 run per cell, 11,435 measured tokens across both variants). Full Experiment 1 (monolithic) and Experiment 2 rows are in [`results/results.csv`](results.csv).
 
-| Seeded PR | Planted Flaw (`labels.csv`) | Expected | Blind Independent (ADR-008) | Shared Context | Tokens |
+| Seeded PR | Planted Flaw (`labels.csv`) | Expected | Blind Independent (ADR-008) | Shared Context (Canned Note) | Tokens (both variants) |
 |---|---|---|---|---|---|
 | `pr-1` | None (correct control) | `APPROVE` | `APPROVE` (Match) | `APPROVE` (Match) | 2,427 |
 | `pr-2` | Duplicate IDs reported twice in `remove()` return | `REQUEST_CHANGES` | `REQUEST_CHANGES` (Match) | `APPROVE` (**Missed**) | 2,415 |

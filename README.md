@@ -9,8 +9,9 @@ Autonomous multi-agent GitHub Actions workflow that turns a GitHub issue into a 
 
 ## Cost, Spending Limit & Token Usage
 - **Hard Spending Limit**: Runs exclusively on a Google AI Studio **Free-Tier** API key with no billing account attached (hard \$0.00 spending cap enforced by provider).
-- **Measured Token Usage**: `27,073` tokens across Experiment 1 (5 monolithic runs), `11,435` tokens across Experiment 2 (10 seeded-PR review runs), and ~80,000 tokens across the 5 GitHub Actions runs (~118.5k tokens total; **\$0.00 spent**).
-- **Hidden-Test Isolation**: `experiment/hidden_tests/` was kept outside the repository during all 5 GitHub Actions runs (committed only afterward), and `autose.yml` deletes `experiment/hidden_tests/` immediately after checkout so agents can never read it on future runs.
+- **Measured Token Usage**: `27,073` tokens across Experiment 1 (5 monolithic runs) and `11,435` tokens across Experiment 2 (10 seeded-PR review calls) = **`38,508` measured local tokens**; per-run GitHub Actions token counts are stored inside each run's `state.json` artifact (**\$0.00 spent**).
+- **Hidden-Test Isolation & Post-Run Hardening**: `experiment/hidden_tests/` was kept outside the repository during all 5 GitHub Actions runs and committed afterward for grading. After the 5 runs, `autose.yml` was further hardened to run `rm -rf experiment/hidden_tests` in all 4 jobs, set `persist-credentials: false` on all checkouts (using an ephemeral push auth header instead of `.git/config`), run the collaborator auth gate before `pip install -e .`, and scope `concurrency` (one pending slot, `cancel-in-progress: false`) to `implement_and_release`.
+- **Branch Protection**: `main` and `master` have GitHub branch protection requiring pull requests before merging (repository admins may bypass for direct docs/workflow fixes; workflow bot tokens never push to `main`/`master`).
 
 ## How to Trigger the Workflow
 A repository maintainer (`admin`, `maintain`, or `write` permission) can trigger the pipeline on any open issue by either:
